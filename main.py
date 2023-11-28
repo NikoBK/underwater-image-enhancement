@@ -1,18 +1,112 @@
+import tkinter as tk
+from tkinter import filedialog,messagebox,ttk
 import cv2
 import functions as f
 import time as t
+import sys
+import os
+
+filepath = None
+filename = None
+res_str = None
+def openFile():
+    global filepath
+    global filename
+    global filepath_text
+    filepath_text.delete('1.0', tk.END)
+    filepath = filedialog.askopenfilename(title="Chose video to process")
+    filename = os.path.basename(filepath)
+    if filename == "":
+        filepath_text.insert(tk.END, "Chose video to process")
+    else:
+        filepath_text.insert(tk.END, "Current file:\n")
+        filepath_text.insert(tk.END, filepath)
+
+def endGUI():
+    global filepath
+    global filepath_text
+    global res_str
+    global error
+    res_str = res_dropdown.get()
+    if filepath == None or filepath == "":
+        error.set("No filepath chosen!")
+        return
+    if res_str == "":
+        error.set("No output resolution chosen!")
+        return
+    else:
+        if not cc_var.get() and not CLAHE_var.get() and not dist_var.get():
+            answer = messagebox.askyesno("Exit","No processing was chosen. Are you sure you want to continue?")
+            if not answer:
+                return
+        window.destroy()
+
+def on_closing():
+    if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        window.destroy()
+        sys.exit()
+
+window = tk.Tk()
+window.title('My Window')
+window.geometry('200x400')
+window.resizable(False, False)
+
+browse_label = tk.Label(window,text="Chose video file to process")
+browse_label.pack()
+browse_btn = tk.Button(window, text="Browse", command=openFile)
+browse_btn.pack()
+
+filepath_label = tk.Label(window,text="Current file:")
+filepath_label.pack()
+filepath_text = tk.Text(window, height=5, width=52)
+filepath_text.pack()
+filepath_text.insert(tk.END, "None!")
+
+cc_var = tk.BooleanVar()
+CLAHE_var = tk.BooleanVar()
+dist_var = tk.BooleanVar()
+options_label = tk.Label(window,text="Video Processing Options:")
+options_label.pack()
+c1 = tk.Checkbutton(window, text='Apply Color Correction', variable=cc_var, onvalue=1, offvalue=0, command=None)
+c1.pack()
+c2 = tk.Checkbutton(window, text='Apply CLAHE', variable=CLAHE_var, onvalue=1, offvalue=0, command=None)
+c2.pack()
+c3 = tk.Checkbutton(window, text='Find distance to laser points', variable=dist_var, onvalue=1, offvalue=0, command=None)
+c3.pack()
+
+res_label = tk.Label(window,text="Chose output resolution")
+res_label.pack()
+resolutions = ["1280 × 720","1920 × 1080","2560 × 1440","3840 × 2160"]
+res_dropdown = ttk.Combobox(window,values=resolutions)
+res_dropdown.pack()
+
+process_btn = tk.Button(window, text="Process video", command=endGUI)
+process_btn.pack(pady=5)
+error = tk.StringVar()
+error_label = tk.Label(window,textvariable=error,fg='red')
+error_label.pack()
+
+window.protocol("WM_DELETE_WINDOW", on_closing)
+window.mainloop()
+
+if filepath == None or filepath == "":
+    print("No file was selected. Please run program again!")
+    sys.exit()
+if res_str == "":
+    print("No output resolution was chosen. Please run program again!")
+    sys.exit()
 
 #Specifying filepath and creating file name
-path = "Assets/GLDS1017_144639752.mp4"
-feed = cv2.VideoCapture(path)
-filename = path.replace("Assets/","")
-filename = filename.replace(".mp4","")
+feed = cv2.VideoCapture(filepath)
+filename,sep,filetype = filename.partition(".")
+filetype = sep + filetype
 
 #Grabbing FPS from source and defining variables
 fps = int(feed.get(cv2.CAP_PROP_FPS))
-res = (1280, 720)
+w,sep,h = res_str.partition(" × ")
+res = (int(w), int(h))
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-out_path = f"output/{filename}_noCLAHE_output.avi"
+out_path = f"output/{filename}_output.avi"
 
 #Creating the Video Writer
 output = cv2.VideoWriter(out_path, fourcc, fps, res)
@@ -28,10 +122,15 @@ while(key != 27):
         break
 
     #Applying processing
-    frame = cv2.resize(frame, res)
-    frame_new = f.compensateChannels(frame)
-    frame_new = f.whiteBalance(frame_new)
-    #frame_new = f.applyCLAHE(frame_new)
+    frame_new = cv2.resize(frame, res)
+    if cc_var.get():
+        frame_new = f.compensateChannels(frame_new)
+        frame_new = f.whiteBalance(frame_new)
+    if CLAHE_var.get():
+        frame_new = f.applyCLAHE(frame_new,4,(8,8))
+    if dist_var.get():
+        #Insert function for calculating distance here
+        pass
 
     #Writing video and displaying current frame
     output.write(frame_new)
@@ -41,7 +140,16 @@ while(key != 27):
 #Calculating process time and closing all windows
 end = t.time()
 dur = end - start
-print(f"Video took {round(dur,2)} second to process!")
 feed.release()
 output.release()
 cv2.destroyAllWindows()
+
+window = tk.Tk()
+window.eval("tk::PlaceWindow %s center" % window.winfo_toplevel())
+window.withdraw()
+
+messagebox.showinfo("Video done processing!",f"Video took {round(dur,2)} second to process and is saved at {out_path}")
+
+window.deiconify()
+window.destroy()
+window.quit()

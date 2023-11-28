@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import tkinter as tk
+from tkinter import filedialog
 
 def compensateChannels(img):
     #Splitting the channels
@@ -46,7 +48,7 @@ def whiteBalance(img):
     #Converting to grayscale
     img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-    # Difining min and max for each channel and grayscale image
+    # Defining mean for each channel and grayscale image
     b_mean = np.mean(b)
     g_mean = np.mean(g)
     r_mean = np.mean(r)
