@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
-import tkinter as tk
-from tkinter import filedialog
+import math
 
 def compensateChannels(img):
     #Splitting the channels
@@ -89,3 +88,71 @@ def applyCLAHE(img,clipLimit,tileGridSize):
     newImg = cv2.cvtColor(lab,cv2.COLOR_LAB2BGR)
 
     return newImg
+
+def getPoints(frame,thresh):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    _, thresh = cv2.threshold(blur, thresh, 255, cv2.THRESH_BINARY)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    try:
+        contoursOne = contours[0]
+        contoursTwo = contours[1]
+    except:
+        pointOne = [0,0]
+        pointTwo = [0,0]
+        return pointOne, pointTwo,thresh
+
+    pointOne = []
+    pointTwo = []
+    for cont in range(contoursOne.shape[0]):
+        y, x = contoursOne[cont][0]
+        pointOne.append((y, x))
+    for cont in range(contoursTwo.shape[0]):
+        y, x = contoursTwo[cont][0]
+        pointTwo.append((y, x))
+    pointOne = np.array(pointOne)
+    pointTwo = np.array(pointTwo)
+
+    pointOneY = pointOne[:, 0]
+    pointOneX = pointOne[:, 1]
+    pointTwoY = pointTwo[:, 0]
+    pointTwoX = pointTwo[:, 1]
+
+    pointOneY = round(np.sum(pointOneY) / pointOneY.shape[0])
+    pointOneX = round(np.sum(pointOneX) / pointOneX.shape[0])
+    pointTwoY = round(np.sum(pointTwoY) / pointTwoY.shape[0])
+    pointTwoX = round(np.sum(pointTwoX) / pointTwoX.shape[0])
+
+    pointOne = [pointOneY, pointOneX]
+    pointTwo = [pointTwoY, pointTwoX]
+
+    return pointOne,pointTwo,thresh
+
+def calcDist(pointLeft,pointRight,unit):
+    if pointLeft == [0,0] or pointRight == [0,0]:
+        distance = "No points found"
+        return distance
+    v = [(pointLeft[0] - pointRight[0]), (pointLeft[1] - pointRight[1])]
+    frameW = 3840
+    frameH = 2160
+    sensorW = 6.17
+    sensorH = 4.55
+    pixelW = sensorW / frameW
+    pixelH = sensorH / frameH
+    fov = 150 * (math.pi / 180)
+    vMM = [v[0] * pixelH, v[1] * pixelW]
+    B = math.sqrt((vMM[0] ** 2) + (vMM[1] ** 2))  # Lenght of vector on screen (in mm)
+    b = (sensorW/2) / math.tan((fov/2))
+    G = 100  # mm. Real size of object
+    g = (G * b / B)
+    g = g + 65
+    distance = round(g, 2)
+    if unit == "mm":
+        pass
+    if unit == "cm":
+        distance = distance / 10
+        distance = round(distance,2)
+    if unit == "m":
+        distance = distance / 1000
+        distance = round(distance, 2)
+    return distance

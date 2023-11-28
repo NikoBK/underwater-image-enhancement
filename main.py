@@ -46,9 +46,27 @@ def on_closing():
         window.destroy()
         sys.exit()
 
+def pointVariables():
+    if dist_var.get():
+        window.geometry('200x450')
+        thresh_label = tk.Label(pointvar_frame,text="Set threshold")
+        thresh_label.pack()
+        slider_thresh = tk.Scale(pointvar_frame, from_=230, to=255, orient='horizontal',variable=thresh_var)
+        slider_thresh.pack()
+        units = ["mm", "cm", "m"]
+        unit_label = tk.Label(pointvar_frame, text="Chose display unit")
+        unit_label.pack()
+        unit_dropdown = ttk.Combobox(pointvar_frame, values=units)
+        unit_dropdown.pack()
+    else:
+        for widget in pointvar_frame.winfo_children():
+            widget.destroy()
+        window.geometry('200x350')
+        tmp = tk.Frame(pointvar_frame, width=1, height=1, borderwidth=0, highlightthickness=0)
+        tmp.pack()
 window = tk.Tk()
 window.title('My Window')
-window.geometry('200x400')
+window.geometry('200x350')
 window.resizable(False, False)
 
 browse_label = tk.Label(window,text="Chose video file to process")
@@ -65,14 +83,20 @@ filepath_text.insert(tk.END, "None!")
 cc_var = tk.BooleanVar()
 CLAHE_var = tk.BooleanVar()
 dist_var = tk.BooleanVar()
+thresh_var = tk.IntVar()
+unit_var = tk.IntVar()
+
 options_label = tk.Label(window,text="Video Processing Options:")
 options_label.pack()
-c1 = tk.Checkbutton(window, text='Apply Color Correction', variable=cc_var, onvalue=1, offvalue=0, command=None)
-c1.pack()
-c2 = tk.Checkbutton(window, text='Apply CLAHE', variable=CLAHE_var, onvalue=1, offvalue=0, command=None)
-c2.pack()
-c3 = tk.Checkbutton(window, text='Find distance to laser points', variable=dist_var, onvalue=1, offvalue=0, command=None)
-c3.pack()
+check_cc = tk.Checkbutton(window, text='Apply Color Correction', variable=cc_var, onvalue=1, offvalue=0, command=None)
+check_cc.pack()
+check_CLAHE = tk.Checkbutton(window, text='Apply CLAHE', variable=CLAHE_var, onvalue=1, offvalue=0, command=None)
+check_CLAHE.pack()
+check_dist = tk.Checkbutton(window, text='Find distance to laser points', variable=dist_var, onvalue=1, offvalue=0, command=pointVariables)
+check_dist.pack()
+
+pointvar_frame = tk.Frame(window)
+pointvar_frame.pack()
 
 res_label = tk.Label(window,text="Chose output resolution")
 res_label.pack()
@@ -115,6 +139,13 @@ output = cv2.VideoWriter(out_path, fourcc, fps, res)
 key = None
 scale = 0.2
 start = t.time()
+
+thresh = thresh_var.get()
+unit = unit_var.get()
+unitArr = ["mm","cm","m"]
+print(thresh)
+print(unit)
+print(unitArr[unit])
 while(key != 27):
     #Reading source frame by frame
     ret,frame = feed.read()
@@ -130,7 +161,8 @@ while(key != 27):
         frame_new = f.applyCLAHE(frame_new,4,(8,8))
     if dist_var.get():
         #Insert function for calculating distance here
-        pass
+        pointOne, pointTwo, frameThresh = f.getPoints(frame, thresh)
+        distance = f.calcDist(pointOne, pointTwo, unitArr[unit])
 
     #Writing video and displaying current frame
     output.write(frame_new)
