@@ -142,7 +142,7 @@ def getPoints(frame):
 
     return pointOne,pointTwo,thresh
 
-def calcDist(pointLeft,pointRight,unit):
+def calcDist(pointLeft,pointRight,unit,frame):
     #Check if getPoints() was able to find two points
     if pointLeft == [0,0] or pointRight == [0,0]:
         distance = "No points found"
@@ -150,8 +150,8 @@ def calcDist(pointLeft,pointRight,unit):
     #Define vector between two points
     v = [(pointLeft[0] - pointRight[0]), (pointLeft[1] - pointRight[1])]
     #Define frame and sensor dimensions, to calculate height and width of a pixel
-    frameW = 3840
-    frameH = 2160
+    frameW = frame.shape[1]
+    frameH = frame.shape[0]
     sensorW = 6.17
     sensorH = 4.55
     pixelW = sensorW / frameW
@@ -159,13 +159,11 @@ def calcDist(pointLeft,pointRight,unit):
     #Convert vector unit from px to mm, and calculate length
     vMM = [v[0] * pixelH, v[1] * pixelW]
     B = math.sqrt((vMM[0] ** 2) + (vMM[1] ** 2))  # Lenght of vector on screen (in mm)
-    #Calculate focal length based on FOV.
-    fov = 150 * (math.pi / 180)
-    b = (sensorW/2) / math.tan((fov/2))
+    #Define focal length
+    b = 6.32576 #Calculated from b = B * g/G, where B is 0.9796206292435932, g is 650 and G is 100
     #Define real size of object, calculate distance and round to two decimals
     G = 100  # mm. Real size of object
-    g = (G * b / B)
-    g = g + 65 #???????????????????
+    g = G * (b / B)
     distance = round(g, 2)
     #Convert distance to unit specified in input, and return this
     if unit == "mm":

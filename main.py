@@ -156,7 +156,14 @@ while(key != 27):
         pointOne, pointTwo, frameThresh = f.getPoints(frame)
         cv2.line(frame_new,pointOne,pointTwo,(255,255,255),5)
         distance = f.calcDist(pointOne, pointTwo, unitArr[unit])
-        cv2.putText(frame_new,f"{distance} {unitArr[unit]}",(1520,2020),cv2.FONT_HERSHEY_SIMPLEX,5,(255,255,255),5)
+        if frame_new.shape[0] == 2160:
+            cv2.putText(frame_new,f"{distance} {unitArr[unit]}",(1520,2020),cv2.FONT_HERSHEY_SIMPLEX,5,(255,255,255),5)
+        if frame_new.shape[0] == 1440:
+            cv2.putText(frame, f"{distance} {unitArr[unit]}", (1050, 1350), cv2.FONT_HERSHEY_SIMPLEX, 3,(255, 255, 255), 3)
+        if frame_new.shape[0] == 1080:
+            cv2.putText(frame_new, f"{distance} {unitArr[unit]}", (820, 1010), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255),2)
+        if frame_new.shape[0] == 720:
+            cv2.putText(frame_new, f"{distance} {unitArr[unit]}", (500, 680), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255),2)
     frame_end = t.time()
     #Writing video and displaying current frame
     output.write(frame_new)
