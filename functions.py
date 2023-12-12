@@ -89,11 +89,22 @@ def applyCLAHE(img,clipLimit,tileGridSize):
 
     return newImg
 
-def getPoints(frame,thresh):
+def getPoints(frame):
+    #Converting frame to grayscale, and appliying gaussian blur
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, thresh = cv2.threshold(blur, thresh, 255, cv2.THRESH_BINARY)
-    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    blur = blur[155:2060, 0:3840]
+    #Thresholding grayscale image, and finding contours
+    contour_count = 100
+    threshold = 230
+    while(contour_count > 2):
+        _, thresh = cv2.threshold(blur, threshold, 255, cv2.THRESH_BINARY)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contour_count = len(contours)
+        threshold += 1
+        if threshold > 255:
+            break
+    #Simple check if the algorithm was able to find two contours:
     try:
         contoursOne = contours[0]
         contoursTwo = contours[1]
@@ -102,6 +113,7 @@ def getPoints(frame,thresh):
         pointTwo = [0,0]
         return pointOne, pointTwo,thresh
 
+    #For loop where each contour coordinate is appended to a new array
     pointOne = []
     pointTwo = []
     for cont in range(contoursOne.shape[0]):
@@ -113,6 +125,7 @@ def getPoints(frame,thresh):
     pointOne = np.array(pointOne)
     pointTwo = np.array(pointTwo)
 
+    #Seperating x and y coordinates into seperate lists, and finding an average
     pointOneY = pointOne[:, 0]
     pointOneX = pointOne[:, 1]
     pointTwoY = pointTwo[:, 0]
@@ -123,30 +136,38 @@ def getPoints(frame,thresh):
     pointTwoY = round(np.sum(pointTwoY) / pointTwoY.shape[0])
     pointTwoX = round(np.sum(pointTwoX) / pointTwoX.shape[0])
 
-    pointOne = [pointOneY, pointOneX]
-    pointTwo = [pointTwoY, pointTwoX]
+    #Creating two points from the average x and y coordinates, and returning these
+    pointOne = [pointOneY, pointOneX + 155]
+    pointTwo = [pointTwoY, pointTwoX + 155]
 
     return pointOne,pointTwo,thresh
 
 def calcDist(pointLeft,pointRight,unit):
+    #Check if getPoints() was able to find two points
     if pointLeft == [0,0] or pointRight == [0,0]:
         distance = "No points found"
         return distance
+    #Define vector between two points
     v = [(pointLeft[0] - pointRight[0]), (pointLeft[1] - pointRight[1])]
+    #Define frame and sensor dimensions, to calculate height and width of a pixel
     frameW = 3840
     frameH = 2160
     sensorW = 6.17
     sensorH = 4.55
     pixelW = sensorW / frameW
     pixelH = sensorH / frameH
-    fov = 150 * (math.pi / 180)
+    #Convert vector unit from px to mm, and calculate length
     vMM = [v[0] * pixelH, v[1] * pixelW]
     B = math.sqrt((vMM[0] ** 2) + (vMM[1] ** 2))  # Lenght of vector on screen (in mm)
+    #Calculate focal length based on FOV.
+    fov = 150 * (math.pi / 180)
     b = (sensorW/2) / math.tan((fov/2))
+    #Define real size of object, calculate distance and round to two decimals
     G = 100  # mm. Real size of object
     g = (G * b / B)
-    g = g + 65
+    g = g + 65 #???????????????????
     distance = round(g, 2)
+    #Convert distance to unit specified in input, and return this
     if unit == "mm":
         pass
     if unit == "cm":

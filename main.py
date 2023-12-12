@@ -49,10 +49,6 @@ def on_closing():
 def pointVariables():
     if dist_var.get():
         window.geometry('200x450')
-        thresh_label = tk.Label(pointvar_frame,text="Set threshold")
-        thresh_label.pack()
-        slider_thresh = tk.Scale(pointvar_frame, from_=230, to=255, orient='horizontal',variable=thresh_var)
-        slider_thresh.pack()
         units = ["mm", "cm", "m"]
         unit_label = tk.Label(pointvar_frame, text="Chose display unit")
         unit_label.pack()
@@ -83,7 +79,6 @@ filepath_text.insert(tk.END, "None!")
 cc_var = tk.BooleanVar()
 CLAHE_var = tk.BooleanVar()
 dist_var = tk.BooleanVar()
-thresh_var = tk.IntVar()
 unit_var = tk.IntVar()
 
 options_label = tk.Label(window,text="Video Processing Options:")
@@ -140,12 +135,8 @@ key = None
 scale = 0.2
 start = t.time()
 
-thresh = thresh_var.get()
 unit = unit_var.get()
 unitArr = ["mm","cm","m"]
-print(thresh)
-print(unit)
-print(unitArr[unit])
 while(key != 27):
     #Reading source frame by frame
     ret,frame = feed.read()
@@ -153,6 +144,7 @@ while(key != 27):
         break
 
     #Applying processing
+    frame_start = t.time()
     frame_new = cv2.resize(frame, res)
     if cc_var.get():
         frame_new = f.compensateChannels(frame_new)
@@ -161,9 +153,11 @@ while(key != 27):
         frame_new = f.applyCLAHE(frame_new,4,(8,8))
     if dist_var.get():
         #Insert function for calculating distance here
-        pointOne, pointTwo, frameThresh = f.getPoints(frame, thresh)
+        pointOne, pointTwo, frameThresh = f.getPoints(frame)
+        cv2.line(frame_new,pointOne,pointTwo,(255,255,255),5)
         distance = f.calcDist(pointOne, pointTwo, unitArr[unit])
-
+        cv2.putText(frame_new,f"{distance} {unitArr[unit]}",(1520,2020),cv2.FONT_HERSHEY_SIMPLEX,5,(255,255,255),5)
+    frame_end = t.time()
     #Writing video and displaying current frame
     output.write(frame_new)
     cv2.imshow("frame",frame_new)
