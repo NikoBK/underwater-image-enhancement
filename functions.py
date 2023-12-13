@@ -96,7 +96,7 @@ def getPoints(frame):
     blur = blur[int(frame.shape[1] * 0.072):int(frame.shape[0] * 0.954), :]
     #Thresholding grayscale image, and finding contours
     contour_count = 100
-    threshold = 200
+    threshold = 150
     while(contour_count > 2):
         _, thresh = cv2.threshold(blur, threshold, 255, cv2.THRESH_BINARY)
         contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -160,7 +160,7 @@ def calcDist(pointLeft,pointRight,unit,frame):
     vMM = [v[0] * pixelH, v[1] * pixelW]
     B = math.sqrt((vMM[0] ** 2) + (vMM[1] ** 2))  # Lenght of vector on screen (in mm)
     #Define focal length
-    b = 6.32576 #Calculated from b = B * g/G, where B is 0.9796206292435932, g is 650 and G is 100
+    b = 4.575277778 #Calculated from b = B * g/G, where B is 1.1438194444444445, g is 400 and G is 100
     #Define real size of object, calculate distance and round to two decimals
     G = 100  # mm. Real size of object
     g = G * (b / B)
