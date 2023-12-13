@@ -153,9 +153,9 @@ while(key != 27):
         frame_new = f.applyCLAHE(frame_new,4,(8,8))
     if dist_var.get():
         #Insert function for calculating distance here
-        pointOne, pointTwo, frameThresh = f.getPoints(frame)
+        pointOne, pointTwo, frameThresh = f.getPoints(frame_new)
         cv2.line(frame_new,pointOne,pointTwo,(255,255,255),5)
-        distance = f.calcDist(pointOne, pointTwo, unitArr[unit])
+        distance = f.calcDist(pointOne, pointTwo, unitArr[unit],frame_new)
         if frame_new.shape[0] == 2160:
             cv2.putText(frame_new,f"{distance} {unitArr[unit]}",(1520,2020),cv2.FONT_HERSHEY_SIMPLEX,5,(255,255,255),5)
         if frame_new.shape[0] == 1440:

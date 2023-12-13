@@ -6,7 +6,7 @@ def compensateChannels(img):
     #Splitting the channels
     b,g,r = cv2.split(img)
 
-    #Difining min and max for each channel
+    #Defining min and max for each channel
     b_min,b_max = np.min(b),np.max(b)
     g_min,g_max = np.min(g),np.max(g)
     r_min, r_max = np.min(r), np.max(r)
@@ -93,10 +93,10 @@ def getPoints(frame):
     #Converting frame to grayscale, and appliying gaussian blur
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    blur = blur[155:2060, 0:3840]
+    blur = blur[int(frame.shape[1] * 0.072):int(frame.shape[0] * 0.954), :]
     #Thresholding grayscale image, and finding contours
     contour_count = 100
-    threshold = 230
+    threshold = 200
     while(contour_count > 2):
         _, thresh = cv2.threshold(blur, threshold, 255, cv2.THRESH_BINARY)
         contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -137,8 +137,8 @@ def getPoints(frame):
     pointTwoX = round(np.sum(pointTwoX) / pointTwoX.shape[0])
 
     #Creating two points from the average x and y coordinates, and returning these
-    pointOne = [pointOneY, pointOneX + 155]
-    pointTwo = [pointTwoY, pointTwoX + 155]
+    pointOne = [pointOneY, pointOneX + int(frame.shape[1] * 0.072)]
+    pointTwo = [pointTwoY, pointTwoX + int(frame.shape[1] * 0.072)]
 
     return pointOne,pointTwo,thresh
 

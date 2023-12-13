@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import functions as f
 
-filepath = "Assets/Kridtgrav-lflaske - frame at 0m30s.jpg"
+filepath = "Assets/long_dist_laser_video - frame at 0m2s.jpg"
 filename,sep,format = filepath.partition(".")
 folder,sep,filename = filename.partition("/")
 img = cv2.imread(filepath)

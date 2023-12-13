@@ -15,12 +15,12 @@ while(key != 27):
         break
 
     frame_start = t.time()
-    frame_new = cv2.resize(frame, (3840,2160))
-    frame_new = f.compensateChannels(frame_new)
-    frame_new = f.whiteBalance(frame_new)
-    frame_new = f.applyCLAHE(frame_new, 4, (8, 8))
-    pointOne, pointTwo, frameThresh = f.getPoints(frame)
-    distance = f.calcDist(pointOne, pointTwo, "mm")
+    frame_new = cv2.resize(frame, (1280,720))
+    #frame_new = f.compensateChannels(frame_new)
+    #frame_new = f.whiteBalance(frame_new)
+    #frame_new = f.applyCLAHE(frame_new, 4, (8, 8))
+    pointOne, pointTwo, frameThresh = f.getPoints(frame_new)
+    distance = f.calcDist(pointOne, pointTwo, "mm",frame_new)
     cv2.putText(frame_new, f"{distance} mm",(100,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),1)
     cv2.imshow("frame",frame_new)
 
