@@ -6,7 +6,7 @@ Any kind of machine learning was out of scope for this project and might be used
 contains dense amounts of marine snow unlike tropical waters that are often used in underwater image enhancement projects.
 
 ## Result Examples
-<img src="results/stool_before.jpg" width="420" height="230" align=center/> <img src="results/stool_after.jpg" width="420" height="230" align=center/>
+<img src="results/stool_before.jpg" width="390" height="230" align=center/> <img src="results/stool_after.jpg" width="390" height="230" align=center/>
 
 ## Dependencies
 The scripts for this repository was made on the following depencies that you should have on the listed version or higher:
