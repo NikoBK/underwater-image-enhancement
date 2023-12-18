@@ -9,7 +9,10 @@ import os
 filepath = None
 filename = None
 res_str = None
-def openFile():
+
+def openfile():
+    """Event handler for browse selection called from tkinter.
+    Opens a file browser to select video input."""
     global filepath
     global filename
     global filepath_text
@@ -22,7 +25,9 @@ def openFile():
         filepath_text.insert(tk.END, "Current file:\n")
         filepath_text.insert(tk.END, filepath)
 
-def endGUI():
+def startprocess():
+    """Starts the video processing under the required conditions
+    such as a valid path, processing modes & output methods are not None."""
     global filepath
     global filepath_text
     global res_str
@@ -41,16 +46,19 @@ def endGUI():
                 return
         window.destroy()
 
-def on_closing():
+def onclosing():
+    """Popup dialog to prevent accidentally stopping the process."""
     if messagebox.askokcancel("Quit", "Do you want to quit?"):
         window.destroy()
         sys.exit()
 
-def pointVariables():
+def pointvariables():
+    """Calculate the distance in the selected unit of measurement to
+    a set of two bright red laser points."""
     if dist_var.get():
         window.geometry('200x450')
         units = ["mm", "cm", "m"]
-        unit_label = tk.Label(pointvar_frame, text="Chose display unit")
+        unit_label = tk.Label(pointvar_frame, text="Choose display unit")
         unit_label.pack()
         unit_dropdown = ttk.Combobox(pointvar_frame, values=units)
         unit_dropdown.pack()
@@ -60,14 +68,17 @@ def pointVariables():
         window.geometry('200x350')
         tmp = tk.Frame(pointvar_frame, width=1, height=1, borderwidth=0, highlightthickness=0)
         tmp.pack()
+
+# Window setup
 window = tk.Tk()
 window.title('My Window')
 window.geometry('200x350')
 window.resizable(False, False)
 
-browse_label = tk.Label(window,text="Chose video file to process")
+# Browse button setup
+browse_label = tk.Label(window,text="Choose video file to process")
 browse_label.pack()
-browse_btn = tk.Button(window, text="Browse", command=openFile)
+browse_btn = tk.Button(window, text="Browse", command=openfile)
 browse_btn.pack()
 
 filepath_label = tk.Label(window,text="Current file:")
@@ -81,31 +92,33 @@ CLAHE_var = tk.BooleanVar()
 dist_var = tk.BooleanVar()
 unit_var = tk.IntVar()
 
+# Options display
 options_label = tk.Label(window,text="Video Processing Options:")
 options_label.pack()
 check_cc = tk.Checkbutton(window, text='Apply Color Correction', variable=cc_var, onvalue=1, offvalue=0, command=None)
 check_cc.pack()
 check_CLAHE = tk.Checkbutton(window, text='Apply CLAHE', variable=CLAHE_var, onvalue=1, offvalue=0, command=None)
 check_CLAHE.pack()
-check_dist = tk.Checkbutton(window, text='Find distance to laser points', variable=dist_var, onvalue=1, offvalue=0, command=pointVariables)
+check_dist = tk.Checkbutton(window, text='Find distance to laser points', variable=dist_var, onvalue=1, offvalue=0, command=pointvariables)
 check_dist.pack()
 
 pointvar_frame = tk.Frame(window)
 pointvar_frame.pack()
 
+# Resolutions setup
 res_label = tk.Label(window,text="Chose output resolution")
 res_label.pack()
 resolutions = ["1280 × 720","1920 × 1080","2560 × 1440","3840 × 2160"]
 res_dropdown = ttk.Combobox(window,values=resolutions)
 res_dropdown.pack()
 
-process_btn = tk.Button(window, text="Process video", command=endGUI)
+process_btn = tk.Button(window, text="Process video", command=startprocess)
 process_btn.pack(pady=5)
 error = tk.StringVar()
 error_label = tk.Label(window,textvariable=error,fg='red')
 error_label.pack()
 
-window.protocol("WM_DELETE_WINDOW", on_closing)
+window.protocol("WM_DELETE_WINDOW", onclosing)
 window.mainloop()
 
 if filepath == None or filepath == "":
@@ -115,22 +128,22 @@ if res_str == "":
     print("No output resolution was chosen. Please run program again!")
     sys.exit()
 
-#Specifying filepath and creating file name
+# Specifying filepath and creating file name
 feed = cv2.VideoCapture(filepath)
 filename,sep,filetype = filename.partition(".")
 filetype = sep + filetype
 
-#Grabbing FPS from source and defining variables
+# Grabbing FPS from source and defining variables
 fps = int(feed.get(cv2.CAP_PROP_FPS))
 w,sep,h = res_str.partition(" × ")
 res = (int(w), int(h))
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 out_path = f"output/{filename}_output.avi"
 
-#Creating the Video Writer
+# Creating the Video Writer
 output = cv2.VideoWriter(out_path, fourcc, fps, res)
 
-#Entering loop to save video, and defining variables for scale and time
+# Entering loop to save video, and defining variables for scale and time
 key = None
 scale = 0.2
 start = t.time()
@@ -138,12 +151,12 @@ start = t.time()
 unit = unit_var.get()
 unitArr = ["mm","cm","m"]
 while(key != 27):
-    #Reading source frame by frame
+    # Reading source frame by frame
     ret,frame = feed.read()
     if not ret:
         break
 
-    #Applying processing
+    # Applying processing
     frame_start = t.time()
     frame_new = cv2.resize(frame, res)
     if cc_var.get():
@@ -152,7 +165,6 @@ while(key != 27):
     if CLAHE_var.get():
         frame_new = f.applyCLAHE(frame_new,4,(8,8))
     if dist_var.get():
-        #Insert function for calculating distance here
         pointOne, pointTwo, frameThresh = f.getPoints(frame_new)
         cv2.line(frame_new,pointOne,pointTwo,(255,255,255),5)
         distance = f.calcDist(pointOne, pointTwo, unitArr[unit],frame_new)
@@ -165,12 +177,12 @@ while(key != 27):
         if frame_new.shape[0] == 720:
             cv2.putText(frame_new, f"{distance} {unitArr[unit]}", (500, 680), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255),2)
     frame_end = t.time()
-    #Writing video and displaying current frame
+    # Writing video and displaying current frame
     output.write(frame_new)
     cv2.imshow("frame",frame_new)
     key = cv2.waitKey(1)
 
-#Calculating process time and closing all windows
+# Calculating process time and closing all windows
 end = t.time()
 dur = end - start
 feed.release()
@@ -181,7 +193,7 @@ window = tk.Tk()
 window.eval("tk::PlaceWindow %s center" % window.winfo_toplevel())
 window.withdraw()
 
-messagebox.showinfo("Video done processing!",f"Video took {round(dur,2)} second to process and is saved at {out_path}")
+messagebox.showinfo("Video done processing!",f"Video took {round(dur,2)} seconds to process and is saved at: {out_path}")
 
 window.deiconify()
 window.destroy()

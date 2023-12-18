@@ -3,6 +3,9 @@ import numpy as np
 import math
 
 def compensateChannels(img):
+    """Compensate color on the image BGR channels based
+    on the presence of green color."""
+
     #Splitting the channels
     b,g,r = cv2.split(img)
 
@@ -40,11 +43,15 @@ def compensateChannels(img):
     newImg = newImg.astype(np.uint8)
 
     return newImg
+
 def whiteBalance(img):
+    """ Apply white balance to a BGR image using the
+    means of every channel including the grayscale image."""
+
     # Splitting the channels
     b, g, r = cv2.split(img)
 
-    #Converting to grayscale
+    # Converting to grayscale
     img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
     # Defining mean for each channel and grayscale image
@@ -53,12 +60,12 @@ def whiteBalance(img):
     r_mean = np.mean(r)
     gray_mean = np.mean(img_gray)
 
-    #Converting to 32-bit integers
+    # Converting to 32-bit integers
     b = b.astype(np.uint32)
     g = g.astype(np.uint32)
     r = r.astype(np.uint32)
 
-    #performing white balancing using the Gray World algorithm
+    # Performing white balancing using the Gray World algorithm
     b = b * (gray_mean/b_mean)
     g = g * (gray_mean/g_mean)
     r = r * (gray_mean/r_mean)
@@ -75,26 +82,33 @@ def whiteBalance(img):
     return newImg
 
 def applyCLAHE(img,clipLimit,tileGridSize):
-    #Converting to LAB color space and splitting channels
+    """Apply Contrast Limited Adaptive Histogram Equalization to the L-channel
+    intensity image of LAB image generated from a BGR image."""
+
+    # Converting to LAB color space and splitting channels
     img_lab = cv2.cvtColor(img,cv2.COLOR_BGR2LAB)
     l,a,b = cv2.split(img_lab)
 
-    #Creating an CLAHE object and applying to L channel
+    # Creating an CLAHE object and applying to L channel
     clahe = cv2.createCLAHE(clipLimit=clipLimit,tileGridSize=tileGridSize)
     l = clahe.apply(l)
 
-    #Merging channels and converting back to BGR
+    # Merging channels and converting back to BGR
     lab = cv2.merge((l,a,b))
     newImg = cv2.cvtColor(lab,cv2.COLOR_LAB2BGR)
 
     return newImg
 
 def getPoints(frame):
-    #Converting frame to grayscale, and appliying gaussian blur
+    """Uses an image as input to return two points 
+    and returns a threshold image to find laser pointer dots."""
+
+    # Converting frame to grayscale, and appliying gaussian blur
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
     blur = blur[int(frame.shape[1] * 0.072):int(frame.shape[0] * 0.954), :]
-    #Thresholding grayscale image, and finding contours
+    
+    # Thresholding grayscale image, and finding contours
     contour_count = 100
     threshold = 150
     while(contour_count > 2):
@@ -104,7 +118,8 @@ def getPoints(frame):
         threshold += 1
         if threshold > 255:
             break
-    #Simple check if the algorithm was able to find two contours:
+    
+    # Simple check if the algorithm was able to find two contours:
     try:
         contoursOne = contours[0]
         contoursTwo = contours[1]
@@ -113,7 +128,7 @@ def getPoints(frame):
         pointTwo = [0,0]
         return pointOne, pointTwo,thresh
 
-    #For loop where each contour coordinate is appended to a new array
+    # For loop where each contour coordinate is appended to a new array
     pointOne = []
     pointTwo = []
     for cont in range(contoursOne.shape[0]):
@@ -125,7 +140,7 @@ def getPoints(frame):
     pointOne = np.array(pointOne)
     pointTwo = np.array(pointTwo)
 
-    #Seperating x and y coordinates into seperate lists, and finding an average
+    # Seperating x and y coordinates into seperate lists, and finding an average
     pointOneY = pointOne[:, 0]
     pointOneX = pointOne[:, 1]
     pointTwoY = pointTwo[:, 0]
@@ -136,36 +151,39 @@ def getPoints(frame):
     pointTwoY = round(np.sum(pointTwoY) / pointTwoY.shape[0])
     pointTwoX = round(np.sum(pointTwoX) / pointTwoX.shape[0])
 
-    #Creating two points from the average x and y coordinates, and returning these
+    # Creating two points from the average x and y coordinates, and returning these
     pointOne = [pointOneY, pointOneX + int(frame.shape[1] * 0.072)]
     pointTwo = [pointTwoY, pointTwoX + int(frame.shape[1] * 0.072)]
 
     return pointOne,pointTwo,thresh
 
 def calcDist(pointLeft,pointRight,unit,frame):
-    #Check if getPoints() was able to find two points
+    """Takes two points and a frame used to ccorigate the resolution.
+    Returns a two decimal float representing a distance in the specified
+    unit."""
+    # Check if getPoints() was able to find two points
     if pointLeft == [0,0] or pointRight == [0,0]:
         distance = "No points found"
         return distance
-    #Define vector between two points
+    # Define vector between two points
     v = [(pointLeft[0] - pointRight[0]), (pointLeft[1] - pointRight[1])]
-    #Define frame and sensor dimensions, to calculate height and width of a pixel
+    # Define frame and sensor dimensions, to calculate height and width of a pixel
     frameW = frame.shape[1]
     frameH = frame.shape[0]
     sensorW = 6.17
     sensorH = 4.55
     pixelW = sensorW / frameW
     pixelH = sensorH / frameH
-    #Convert vector unit from px to mm, and calculate length
+    # Convert vector unit from px to mm, and calculate length
     vMM = [v[0] * pixelH, v[1] * pixelW]
     B = math.sqrt((vMM[0] ** 2) + (vMM[1] ** 2))  # Lenght of vector on screen (in mm)
-    #Define focal length
+    # Define focal length
     b = 4.575277778 #Calculated from b = B * g/G, where B is 1.1438194444444445, g is 400 and G is 100
-    #Define real size of object, calculate distance and round to two decimals
+    # Define real size of object, calculate distance and round to two decimals
     G = 100  # mm. Real size of object
     g = G * (b / B)
     distance = round(g, 2)
-    #Convert distance to unit specified in input, and return this
+    # Convert distance to unit specified in input, and return this
     if unit == "mm":
         pass
     if unit == "cm":
