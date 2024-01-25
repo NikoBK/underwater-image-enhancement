@@ -18,7 +18,7 @@ The scripts for this repository was made on the following depencies that you sho
 ![Pandas Version](https://img.shields.io/badge/pandas-v.2.1.3%20-blue.svg)
 
 ## Contributors
-This project was developed by group 363 on Aalborg University Robotics third semester.
+This project was developed by group 363 on Aalborg University, Robot Technology at 3rd semester.
 
 <section id="sec_contributors">
 <table>
@@ -27,7 +27,7 @@ This project was developed by group 363 on Aalborg University Robotics third sem
     <td align="center"><a target="_blank" rel="noreferrer noopener" href="https://github.com/nicopiko"><img src="https://avatars.githubusercontent.com/u/117265455?v=4" width="100px;" alt=""/><br/><sub><b>Nicolai Stallknecht</b></sub></a></br><a href="gttps://github.com/nicopiko" title="">💀</a></td>
     <td align="center"><a target="_blank" rel="noreferrer noopener" href="https://github.com/frozone11"><img src="https://avatars.githubusercontent.com/u/114681419?v=4" width="100px;" alt=""/><br/><sub><b>Hjalte Lillevik Frost</b></sub></a></br><a href="gttps://github.com/frozone11" title="">👽</a></td>
     <td align="center"><a target="_blank" rel="noreferrer noopener"  href="https://github.com/Gustav-Bay"><img src="https://avatars.githubusercontent.com/u/120191982?v=4" width="100px;" alt=""/><br/><sub><b>Gustav Bay</b></sub></a></br><a href="gttps://github.com/Gustav-Bay" title="">😎</a></td>
-    <td align="center"><a target="_blank" rel="noreferrer noopener" href="https://github.com/molingo"><img src="https://avatars.githubusercontent.com/u/120170510?v=4" width="100px;" alt=""/><br/><sub><b>molingo</b></sub></a></br><a href="gttps://github.com/molingo" title="">🇵🇱</a></td>
+    <td align="center"><a target="_blank" rel="noreferrer noopener" href="https://github.com/molingo"><img src="https://avatars.githubusercontent.com/u/120170510?v=4" width="100px;" alt=""/><br/><sub><b>Adrian Maciag</b></sub></a></br><a href="gttps://github.com/molingo" title="">🇵🇱</a></td>
     <td align="center"><a target="_blank" rel="noreferrer noopener" href="https://github.com/nikobk"><img src="https://avatars.githubusercontent.com/u/112914618?v=4" width="100px;" alt=""/><br/><sub><b>Nikolaj Bjørnager Krebs</b></sub></a></br><a href="gttps://github.com/nikobk" title="">🤠</a></td>
   </tr>
 </table>
